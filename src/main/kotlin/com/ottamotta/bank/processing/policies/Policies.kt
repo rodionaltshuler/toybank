@@ -1,17 +1,16 @@
 package com.ottamotta.bank.processing.policies
 
 import com.ottamotta.bank.account.*
-import com.ottamotta.bank.accountstate.AccountStateService
 import com.ottamotta.bank.processing.CASH
 import com.ottamotta.bank.processing.Transaction
-import java.math.BigDecimal
+import org.iban4j.Iban
 
 sealed class Policy
 
 object NegativeAmountPolicy : Policy() {
 
     fun apply(transactionAmount: Money): PolicyApplicationResult {
-        if (transactionAmount < BigDecimal.ZERO) {
+        if (transactionAmount < Money.ZERO) {
             return PolicyApplicationResult(satisfied = false, cause = "Transactions with negative amount value are not supported")
         }
         return PolicyApplicationResult(satisfied = true)
@@ -23,12 +22,12 @@ object NegativeAmountPolicy : Policy() {
 //Deposit command is not allowed in external bank account
 object AccountInOurBankPolicy : Policy() {
 
-    fun apply(tx: Transaction, ibanService: IbanService): PolicyApplicationResult {
+    fun apply(tx: Transaction, belongsToOurBank: (Iban) -> Boolean): PolicyApplicationResult {
 
         val accountsOfOurBank = listOf(tx.from, tx.to)
                 .filter { it != CASH }
                 .filter { iban ->
-                    ibanService.belongsToOurBank(iban!!)
+                    belongsToOurBank(iban!!)
                 }.count()
 
         if (accountsOfOurBank == 0) {
@@ -41,10 +40,10 @@ object AccountInOurBankPolicy : Policy() {
 
 object AccountExistsPolicy : Policy() {
 
-    fun apply(tx: Transaction, ibanService: IbanService, accountRepository: AccountRepository): PolicyApplicationResult {
+    fun apply(tx: Transaction, belongsToOurBank: (Iban) -> Boolean, findAccount: (Iban) -> BankAccount?): PolicyApplicationResult {
         listOf(tx.from, tx.to).filter { it != CASH }.map { iban ->
-            if (ibanService.belongsToOurBank(iban!!)) {
-                val account = accountRepository.findById(iban)
+            if (belongsToOurBank(iban!!)) {
+                val account = findAccount(iban)
                 if (account == null) {
                     return PolicyApplicationResult(satisfied = false, cause = "Account ${iban} doesn't exist")
                 }
@@ -65,15 +64,15 @@ object SameAccountPolicy : Policy() {
 
 object OverdraftPolicy : Policy() {
 
-    fun apply(tx: Transaction, ibanService: IbanService, accountStateService: AccountStateService): PolicyApplicationResult {
-        if (tx.from != CASH && ibanService.belongsToOurBank(tx.from!!)) {
-            val expectedBalance = accountStateService.getBalance(tx.from) - tx.amount
+    fun apply(tx: Transaction,  belongsToOurBank: (Iban) -> Boolean, getBalance: (Iban) -> Money): PolicyApplicationResult {
+        if (tx.from != CASH && belongsToOurBank(tx.from!!)) {
+            val expectedBalance = getBalance(tx.from) - tx.amount
             if (expectedBalance < Money.ZERO) {
                 return PolicyApplicationResult(satisfied = false, cause = "Insufficient funds, overdraft is not allowed")
             }
         }
-        if (tx.to != CASH && ibanService.belongsToOurBank(tx.to!!)) {
-            val expectedBalance = accountStateService.getBalance(tx.to) + tx.amount
+        if (tx.to != CASH && belongsToOurBank(tx.to!!)) {
+            val expectedBalance = getBalance(tx.to) + tx.amount
             if (expectedBalance < Money.ZERO) {
                 return PolicyApplicationResult(satisfied = false, cause = "Insufficient funds, overdraft is not allowed")
             }
@@ -91,10 +90,10 @@ object DepositPolicy: Policy() {
 
 object WithdrawalPolicy : Policy() {
 
-    fun apply(tx: Transaction, ibanService: IbanService, accountRepository: AccountRepository): PolicyApplicationResult {
+    fun apply(tx: Transaction, belongsToOurBank: (Iban) -> Boolean, findAccount: (Iban) -> BankAccount?): PolicyApplicationResult {
         if (tx.from != CASH) {
-            val withdrawalAccount = accountRepository.findById(tx.from!!)
-            if (withdrawalAccount != null && ibanService.belongsToOurBank(withdrawalAccount.iban)) {
+            val withdrawalAccount = findAccount(tx.from!!)
+            if (withdrawalAccount != null && belongsToOurBank(withdrawalAccount.iban)) {
                 when (withdrawalAccount.type) {
                     AccountType.SAVINGS -> if (tx.to != withdrawalAccount.properties.getReferenceCheckingAccount()) {
                         return PolicyApplicationResult(satisfied = false, cause = "Withdrawal from savings account allowed only from reference checking account")

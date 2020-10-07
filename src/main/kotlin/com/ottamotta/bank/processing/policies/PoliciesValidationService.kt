@@ -17,12 +17,12 @@ class PoliciesValidationService(private val accountRepository: AccountRepository
         return try {
             listOf(
                     NegativeAmountPolicy.apply(tx.amount),
-                    AccountInOurBankPolicy.apply(tx, ibanService),
-                    AccountExistsPolicy.apply(tx, ibanService, accountRepository),
+                    AccountInOurBankPolicy.apply(tx,  { iban -> ibanService.belongsToOurBank(iban)}),
+                    AccountExistsPolicy.apply(tx, { iban -> ibanService.belongsToOurBank(iban)}, { iban -> accountRepository.findById(iban) }),
                     SameAccountPolicy.apply(tx),
-                    OverdraftPolicy.apply(tx, ibanService, accountStateService),
+                    OverdraftPolicy.apply(tx,  { iban -> ibanService.belongsToOurBank(iban)}, { iban -> accountStateService.getBalance(iban)}),
                     DepositPolicy.apply(),
-                    WithdrawalPolicy.apply(tx, ibanService, accountRepository)
+                    WithdrawalPolicy.apply(tx, { iban -> ibanService.belongsToOurBank(iban)}, { iban -> accountRepository.findById(iban) })
             ).first{ !it.satisfied }
         } catch (ex: NoSuchElementException) {
             PolicyApplicationResult(satisfied = true)
