@@ -2,16 +2,16 @@ package com.ottamotta.bank.account
 
 import org.iban4j.Iban
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
+
+fun Map<String, Any>.getReferenceCheckingAccount() = this[BankAccount.REFERENCE_ACCOUNT_PROPERTY] as Iban
 
 data class BankAccount(val iban: Iban, val type: AccountType, val properties: Map<String, Any> = emptyMap()) {
     companion object {
-        private const val REFERENCE_ACCOUNT_PROPERTY = "referenceAccount"
-
+        const val REFERENCE_ACCOUNT_PROPERTY = "referenceAccount"
         fun createReferenceAccountProperty(iban: Iban) = mapOf(REFERENCE_ACCOUNT_PROPERTY to iban)
     }
 
-    fun Map<String, Any>.getReferenceCheckingAccount() = this[REFERENCE_ACCOUNT_PROPERTY] as Iban
+
 }
 
 @Component

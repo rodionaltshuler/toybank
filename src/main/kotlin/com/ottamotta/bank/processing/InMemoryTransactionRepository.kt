@@ -17,4 +17,7 @@ class InMemoryTransactionRepository : TransactionRepository {
         return tx
     }
 
+    override fun clear() {
+        transactions.clear()
+    }
 }

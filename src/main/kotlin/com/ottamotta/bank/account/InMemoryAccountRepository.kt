@@ -20,4 +20,8 @@ class InMemoryAccountRepository: AccountRepository {
         accounts[account.iban] = account
         return accounts[account.iban]!!
     }
+
+    override fun clear() {
+        accounts.clear()
+    }
 }

@@ -6,5 +6,5 @@ interface TransactionRepository {
 
     fun findAllForAccount(iban: Iban): List<Transaction>
     fun save(tx: Transaction): Transaction
-
+    fun clear()
 }
