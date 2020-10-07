@@ -1,18 +1,23 @@
 package com.ottamotta.bank.processing
 
+import com.ottamotta.bank.processing.policies.*
 import org.springframework.stereotype.Service
-import java.util.concurrent.CompletableFuture
 
 @Service
-class TransactionService(val transactionRepository: TransactionRepository) {
+class TransactionService(private val transactionRepository: TransactionRepository,
+                         private val policiesValidationService: PoliciesValidationService) {
 
     fun submit(command: Command): Transaction {
-        val tx = when(command) {
-            is DepositCommand -> Transaction(to = command.to, from = null, amount = command.amount)
-            is WithdrawalCommand -> Transaction(to = null, from = command.from, amount = command.amount)
+        val tx = when (command) {
             is TransferCommand -> Transaction(to = command.to, from = command.from, amount = command.amount)
         }
-        //TODO apply tx validation policies here
+
+        val policiesValidationResult = policiesValidationService.apply(tx)
+
+        if (!policiesValidationResult.satisfied) {
+            throw PolicyNotSatisfiedException(policiesValidationResult.cause)
+        }
+
         return transactionRepository.save(tx)
     }
 }

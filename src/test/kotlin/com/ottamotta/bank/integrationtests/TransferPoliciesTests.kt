@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class DepositTests {
+class TransferPoliciesTests {
 
     @Autowired
     private lateinit var ibanService: IbanService
@@ -65,23 +65,32 @@ class DepositTests {
     }
 
     @Test
-    fun `Depositing funds to specified bank account increases it's balance`() {
-
-        val iban = checkingAccount.iban
-        val initialBalance = accountStateService.getBalance(iban)
-
-        //deposit funds
-        val depositAmount = Money.valueOf(250)
-        val command = TransferCommand(to = iban, from = CASH, amount = depositAmount)
-        transactionService.submit(command)
-
-        //verify
-        val endBalance = accountStateService.getBalance(iban)
-        assert(endBalance - initialBalance == depositAmount)
+    fun `NegativeAmountPolicy - negative amount is not allowed`() {
+        val command = TransferCommand(to = checkingAccount.iban, from = CASH, amount = Money.valueOf(-1))
+        assertThrows<PolicyNotSatisfiedException>() {
+            transactionService.submit(command)
+        }
     }
 
     @Test
-    fun `Deposit is not allowed to non-existing account of our bank`() {
+    fun `SameAccountPolicy - Transfer is not allowed if to,from accounts in transaction are the same`() {
+        val command = TransferCommand(to = checkingAccount.iban, from = checkingAccount.iban, amount = Money.valueOf(100))
+        assertThrows<PolicyNotSatisfiedException>() {
+            transactionService.submit(command)
+        }
+    }
+
+    @Test
+    fun `OverdraftPolicy - negative balance is not allowed`() {
+        assert(accountStateService.getBalance(checkingAccount.iban) == Money.ZERO)
+        val command = TransferCommand(to = CASH, from = checkingAccount.iban, amount = Money.valueOf(100))
+        assertThrows<PolicyNotSatisfiedException>() {
+            transactionService.submit(command)
+        }
+    }
+
+    @Test
+    fun `AccountExistsPolicy - Deposit is not allowed to non-existing account of our bank`() {
 
         //create account
         val iban = ibanService.generate()
@@ -99,7 +108,7 @@ class DepositTests {
     }
 
     @Test
-    fun `Cash deposit is not allowed to other bank account`() {
+    fun `AccountInOurBankPolicy - Cash deposit is not allowed to other bank account`() {
 
         assert(!ibanService.belongsToOurBank(externalBankAccount))
 
@@ -111,38 +120,5 @@ class DepositTests {
         }
     }
 
-    @Test
-    fun `Can deposit money to savings account from all allowed account types (checking, cash, external bank)`() {
-        val depositAmount = Money.valueOf(250)
-
-        //fund checking account so we can transfer from it
-        val fundCheckingAccountCommand = TransferCommand(from = CASH, to = checkingAccount.iban, amount = depositAmount)
-        transactionService.submit(fundCheckingAccountCommand)
-
-        listOf(null, checkingAccount.iban, externalBankAccount).forEach {
-            val balanceBefore = accountStateService.getBalance(savingAccount.iban)
-            val command = TransferCommand(from = it, to = savingAccount.iban, amount = depositAmount)
-            transactionService.submit(command)
-            val balanceAfter = accountStateService.getBalance(savingAccount.iban)
-            assert(balanceAfter == balanceBefore + depositAmount)
-        }
-    }
-
-    @Test
-    fun `Can deposit money to personal loan account from all allowed account types (checking, cash, external bank)`() {
-        val depositAmount = Money.valueOf(250)
-
-        //fund checking account so we can transfer from it
-        val fundCheckingAccountCommand = TransferCommand(from = CASH, to = checkingAccount.iban, amount = depositAmount)
-        transactionService.submit(fundCheckingAccountCommand)
-
-        listOf(null, checkingAccount.iban, externalBankAccount).forEach {
-            val balanceBefore = accountStateService.getBalance(personalLoanAccount.iban)
-            val command = TransferCommand(from = it, to = personalLoanAccount.iban, amount = depositAmount)
-            transactionService.submit(command)
-            val balanceAfter = accountStateService.getBalance(personalLoanAccount.iban)
-            assert(balanceAfter == balanceBefore + depositAmount)
-        }
-    }
 
 }

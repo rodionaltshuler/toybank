@@ -5,6 +5,6 @@ import org.iban4j.Iban
 
 sealed class Command
 
-public val CASH = null
+val CASH: Iban? = null
 
 class TransferCommand(val from: Iban? = CASH, val to: Iban? = CASH, val amount: Money): Command()
