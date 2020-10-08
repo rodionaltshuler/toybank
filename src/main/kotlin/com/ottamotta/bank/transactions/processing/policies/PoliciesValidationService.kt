@@ -1,9 +1,9 @@
-package com.ottamotta.bank.processing.policies
+package com.ottamotta.bank.transactions.processing.policies
 
 import com.ottamotta.bank.account.AccountRepository
 import com.ottamotta.bank.account.IbanService
 import com.ottamotta.bank.accountstate.AccountStateService
-import com.ottamotta.bank.processing.Transaction
+import com.ottamotta.bank.transactions.Transaction
 import org.springframework.stereotype.Service
 
 data class PolicyApplicationResult(val satisfied: Boolean, val cause: String = "")

@@ -1,6 +1,9 @@
-package com.ottamotta.bank.processing
+package com.ottamotta.bank.transactions.processing
 
-import com.ottamotta.bank.processing.policies.*
+import com.ottamotta.bank.transactions.Command
+import com.ottamotta.bank.transactions.Transaction
+import com.ottamotta.bank.transactions.TransferCommand
+import com.ottamotta.bank.transactions.processing.policies.*
 import org.springframework.stereotype.Service
 
 @Service

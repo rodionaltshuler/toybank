@@ -2,11 +2,11 @@ package com.ottamotta.bank.integrationtests
 
 import com.ottamotta.bank.account.*
 import com.ottamotta.bank.accountstate.AccountStateService
-import com.ottamotta.bank.processing.CASH
-import com.ottamotta.bank.processing.TransactionRepository
-import com.ottamotta.bank.processing.policies.PolicyNotSatisfiedException
-import com.ottamotta.bank.processing.TransactionService
-import com.ottamotta.bank.processing.TransferCommand
+import com.ottamotta.bank.transactions.CASH
+import com.ottamotta.bank.transactions.processing.TransactionRepository
+import com.ottamotta.bank.transactions.processing.policies.PolicyNotSatisfiedException
+import com.ottamotta.bank.transactions.processing.TransactionService
+import com.ottamotta.bank.transactions.TransferCommand
 import org.iban4j.CountryCode
 import org.iban4j.Iban
 import org.junit.jupiter.api.BeforeEach

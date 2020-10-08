@@ -2,8 +2,8 @@ package com.ottamotta.bank.accountstate
 
 import com.ottamotta.bank.account.AccountRepository
 import com.ottamotta.bank.account.Money
-import com.ottamotta.bank.processing.Transaction
-import com.ottamotta.bank.processing.TransactionRepository
+import com.ottamotta.bank.transactions.Transaction
+import com.ottamotta.bank.transactions.processing.TransactionRepository
 import org.iban4j.Iban
 import org.springframework.stereotype.Service
 

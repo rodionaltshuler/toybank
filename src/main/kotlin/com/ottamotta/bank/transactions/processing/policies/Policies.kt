@@ -1,8 +1,8 @@
-package com.ottamotta.bank.processing.policies
+package com.ottamotta.bank.transactions.processing.policies
 
 import com.ottamotta.bank.account.*
-import com.ottamotta.bank.processing.CASH
-import com.ottamotta.bank.processing.Transaction
+import com.ottamotta.bank.transactions.CASH
+import com.ottamotta.bank.transactions.Transaction
 import org.iban4j.Iban
 
 sealed class Policy

@@ -1,5 +1,6 @@
-package com.ottamotta.bank.processing
+package com.ottamotta.bank.transactions.processing
 
+import com.ottamotta.bank.transactions.Transaction
 import org.iban4j.Iban
 import org.springframework.stereotype.Repository
 

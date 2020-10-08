@@ -1,4 +1,4 @@
-package com.ottamotta.bank.processing
+package com.ottamotta.bank.transactions
 
 import com.ottamotta.bank.account.Money
 import org.iban4j.Iban
