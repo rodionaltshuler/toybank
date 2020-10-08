@@ -15,23 +15,23 @@ class TransfersController(private val transactionService: TransactionService) {
     data class DepositRequest(val to: Iban, val amount: Money)
 
     @PostMapping("/deposit")
-    fun deposit(@RequestBody request: DepositRequest): Transaction {
-        return transactionService.submit(TransferCommand(to = request.to, amount = request.amount))
-    }
+    fun deposit(@RequestBody request: DepositRequest) = TransactionDto.fromTransaction(
+        transactionService.submit(TransferCommand(to = request.to, amount = request.amount))
+    )
 
     data class WithdrawRequest(val from: Iban, val amount: Money)
 
     @PostMapping("/withdraw")
-    fun withdraw(@RequestBody request: WithdrawRequest): Transaction {
-        return transactionService.submit(TransferCommand(from = request.from, amount = request.amount))
-    }
+    fun withdraw(@RequestBody request: WithdrawRequest)= TransactionDto.fromTransaction(
+        transactionService.submit(TransferCommand(from = request.from, amount = request.amount))
+    )
 
     data class TransferRequest(val from: Iban, val to: Iban, val amount: Money)
 
     @PostMapping("/transfer")
-    fun transfer(@RequestBody request: TransferRequest): Transaction {
-        return transactionService.submit(TransferCommand(from = request.from, to = request.to, amount = request.amount))
-    }
+    fun transfer(@RequestBody request: TransferRequest) = TransactionDto.fromTransaction(
+         transactionService.submit(TransferCommand(from = request.from, to = request.to, amount = request.amount))
+    )
 
 
 }
