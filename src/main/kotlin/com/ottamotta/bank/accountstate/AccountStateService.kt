@@ -17,6 +17,9 @@ class AccountStateService(private val accountRepository: AccountRepository,
                 .foldRight(Money.ZERO, { tx, acc -> balanceCalculation(iban, tx, acc)})
     }
 
+    fun getTransactions(iban: Iban): List<Transaction> =
+            transactionRepository.findAllForAccount(iban)
+
     private val balanceCalculation: (Iban, Transaction, Money) -> Money =
             {iban, tx, acc ->
                 var balance: Money = Money.ZERO
