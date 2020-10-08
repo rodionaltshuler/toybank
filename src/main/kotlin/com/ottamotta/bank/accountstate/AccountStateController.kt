@@ -2,6 +2,8 @@ package com.ottamotta.bank.accountstate
 
 import com.ottamotta.bank.account.Money
 import com.ottamotta.bank.transactions.TransactionDto
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
 import org.iban4j.Iban
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -11,13 +13,16 @@ import java.time.Instant
 
 @RestController
 @RequestMapping("/accounts")
+@Api(value="Account state", description="Getting balance or transactions history for accounts")
 class AccountStateController(private val accountStateService: AccountStateService) {
 
     @GetMapping("/{iban}")
+    @ApiOperation("Show balance for the account")
     fun getBalance(@PathVariable("iban") iban: Iban) =
             BalanceDto(iban.toString(), accountStateService.getBalance(iban))
 
     @GetMapping("/{iban}/history")
+    @ApiOperation("Transaction history and current balance for the account")
     fun getTransactionHistory(@PathVariable("iban") iban: Iban) =
             TransactionHistory(
                     iban = iban.toString(),
