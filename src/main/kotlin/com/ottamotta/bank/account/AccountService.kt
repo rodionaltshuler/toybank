@@ -13,6 +13,7 @@ class AccountService(private val bankAccountFactory: BankAccountFactory,
     }
 
     fun createSavingsAccount(referenceAccount: Iban): BankAccount {
+        //FIXME add validation if this reference account is existing checking account in our bank
         val account = bankAccountFactory.createSavingsAccount(referenceAccount = referenceAccount)
         return accountRepository.save(account)
     }
