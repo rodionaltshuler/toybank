@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/transfers")
-class TransactionController(private val transactionService: TransactionService) {
+class TransfersController(private val transactionService: TransactionService) {
 
     data class DepositRequest(val to: Iban, val amount: Money)
 
